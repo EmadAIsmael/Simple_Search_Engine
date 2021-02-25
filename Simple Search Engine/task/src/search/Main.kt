@@ -5,6 +5,8 @@ import kotlin.system.exitProcess
 
 
 var data = arrayListOf<String>()
+var invertedIndex = mutableMapOf<String, MutableList<Int>>()
+
 
 fun getData() {
     println("Enter the number of people:")
@@ -18,9 +20,26 @@ fun getData() {
     println()
 }
 
+fun ArrayList<String>.toInvertedIndex(): MutableMap<String, MutableList<Int>> {
+    val ii = mutableMapOf<String, MutableList<Int>>()
+
+    for ((i, line) in this.withIndex()) {
+        for (word in line.split(" ")) {
+            if (word.toLowerCase() in ii)
+                ii[word.toLowerCase()]?.add(i)
+            else {
+                ii.put(word.toLowerCase(), mutableListOf<Int>())
+                ii[word.toLowerCase()]?.add(i)
+            }
+        }
+    }
+    return ii
+}
+
 fun readData(args: Array<String>) {
     val file = File(args[1])
     data = file.readLines() as ArrayList<String>
+    invertedIndex = data.toInvertedIndex()
 }
 
 fun getQuery() {
@@ -28,12 +47,14 @@ fun getQuery() {
     val query = readLine()!!
 
     // println("\nFound people:")
-    val fp = findPeople(query)
+    // val fp = findPeople(query)
+    val fp = findPeopleIndexed(query)
+    println("${fp.size} persons found:")
     if (fp.isEmpty())
         println("No matching people found.")
     else {
         for (p in fp)
-            println(p)
+            println(data[p])
     }
 }
 
@@ -56,6 +77,10 @@ fun getQueries() {
         }
     }
     println()
+}
+
+fun findPeopleIndexed(query: String): MutableList<Int> {
+    return invertedIndex.getOrDefault(query.toLowerCase(), mutableListOf())
 }
 
 fun findPeople(query: String): ArrayList<String> {
