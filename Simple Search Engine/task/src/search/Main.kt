@@ -1,9 +1,10 @@
 package search
 
+import java.io.File
 import kotlin.system.exitProcess
 
 
-val data = arrayListOf<String>()
+var data = arrayListOf<String>()
 
 fun getData() {
     println("Enter the number of people:")
@@ -15,6 +16,11 @@ fun getData() {
         data.add(readLine()!!)
     }
     println()
+}
+
+fun readData(args: Array<String>) {
+    val file = File(args[1])
+    data = file.readLines() as ArrayList<String>
 }
 
 fun getQuery() {
@@ -71,8 +77,7 @@ fun menu() {
             2. Print all people
             0. Exit
         """.trimIndent())
-        val option = readLine()!!.toInt()
-        when (option) {
+        when (readLine()!!.toInt()) {
             1 -> getQuery()
             2 -> printPeople()
             0 -> {
@@ -90,7 +95,8 @@ fun printPeople() {
         println(p)
 }
 
-fun main() {
-    getData()
+fun main(args: Array<String>) {
+    //getData()
+    readData(args)
     menu()
 }
