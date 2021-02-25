@@ -1,5 +1,7 @@
 package search
 
+import kotlin.system.exitProcess
+
 
 val data = arrayListOf<String>()
 
@@ -13,6 +15,20 @@ fun getData() {
         data.add(readLine()!!)
     }
     println()
+}
+
+fun getQuery() {
+    println("\nEnter a name or email to search all suitable people.")
+    val query = readLine()!!
+
+    // println("\nFound people:")
+    val fp = findPeople(query)
+    if (fp.isEmpty())
+        println("No matching people found.")
+    else {
+        for (p in fp)
+            println(p)
+    }
 }
 
 fun getQueries() {
@@ -46,7 +62,35 @@ fun findPeople(query: String): ArrayList<String> {
     return result
 }
 
+fun menu() {
+    while (true) {
+        println()
+        println("""
+            === Menu ===
+            1. Find a person
+            2. Print all people
+            0. Exit
+        """.trimIndent())
+        val option = readLine()!!.toInt()
+        when (option) {
+            1 -> getQuery()
+            2 -> printPeople()
+            0 -> {
+                println("Bye!")
+                exitProcess(0)
+            }
+            else -> println("\nIncorrect option! Try again.")
+        }
+    }
+}
+
+fun printPeople() {
+    println("\n=== List of people ===")
+    for (p in data)
+        println(p)
+}
+
 fun main() {
     getData()
-    getQueries()
+    menu()
 }
