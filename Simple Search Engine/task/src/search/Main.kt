@@ -8,28 +8,17 @@ var data = arrayListOf<String>()
 var invertedIndex = mutableMapOf<String, MutableList<Int>>()
 
 
-fun getData() {
-    println("Enter the number of people:")
-    val numPeople = readLine()!!.toInt()
-
-    println("Enter all people:")
-    repeat(numPeople) {
-        print("> ")
-        data.add(readLine()!!)
-    }
-    println()
-}
-
 fun ArrayList<String>.toInvertedIndex(): MutableMap<String, MutableList<Int>> {
     val ii = mutableMapOf<String, MutableList<Int>>()
 
     for ((i, line) in this.withIndex()) {
         for (word in line.split(" ")) {
-            if (word.toLowerCase() in ii)
-                ii[word.toLowerCase()]?.add(i)
+            val key = word.toLowerCase()
+            if (key in ii)
+                ii[key]?.add(i)
             else {
-                ii.put(word.toLowerCase(), mutableListOf<Int>())
-                ii[word.toLowerCase()]?.add(i)
+                ii[key] = mutableListOf()
+                ii[key]?.add(i)
             }
         }
     }
@@ -43,12 +32,13 @@ fun readData(args: Array<String>) {
 }
 
 fun getQuery() {
+    println("Select a matching strategy: ALL, ANY, NONE")
+    val strategy = readLine()!!
+
     println("\nEnter a name or email to search all suitable people.")
     val query = readLine()!!
 
-    // println("\nFound people:")
-    // val fp = findPeople(query)
-    val fp = findPeopleIndexed(query)
+    val fp = findPeopleIndexed(query, strategy)
     println("${fp.size} persons found:")
     if (fp.isEmpty())
         println("No matching people found.")
@@ -58,50 +48,46 @@ fun getQuery() {
     }
 }
 
-fun getQueries() {
-    println("Enter the number of search queries:")
-    val numQueries = readLine()!!.toInt()
-    println()
+fun findPeopleIndexed(query: String, strategy: String): MutableList<Int> {
+    val keys = query.toLowerCase().split(" ")
 
-    repeat(numQueries) {
-        println("Enter data to search people:")
-        val query = readLine()!!
+    return when (strategy) {
+        "ALL" ->
+            data.mapIndexed { i, s -> i to s.toLowerCase() }
+                .filter { (i, s) -> s.split(" ").containsAll(keys) }
+                .map { it.first } as MutableList<Int>
 
-        println("\nFound people:")
-        val fp = findPeople(query)
-        if (fp.isEmpty())
-            println("No matching people found.")
-        else {
-            for (p in fp)
-                println(p)
+        "ANY" ->
+            invertedIndex
+                .filter { it.key in keys }
+                .flatMap { it.value }
+                .toSet()
+                .toMutableList()
+
+        "NONE" ->
+            invertedIndex
+                .flatMap { it.value }
+                .minus(invertedIndex.filter { it.key in keys }.flatMap { it.value })
+                .toSet()
+                .toMutableList()
+
+        else -> {
+            mutableListOf()
         }
     }
-    println()
-}
-
-fun findPeopleIndexed(query: String): MutableList<Int> {
-    return invertedIndex.getOrDefault(query.toLowerCase(), mutableListOf())
-}
-
-fun findPeople(query: String): ArrayList<String> {
-    val result = arrayListOf<String>()
-    for (line in data) {
-        if (line.toLowerCase().contains(query.toLowerCase())) {
-            result.add(line)
-        }
-    }
-    return result
 }
 
 fun menu() {
     while (true) {
         println()
-        println("""
+        println(
+            """
             === Menu ===
             1. Find a person
             2. Print all people
             0. Exit
-        """.trimIndent())
+        """.trimIndent()
+        )
         when (readLine()!!.toInt()) {
             1 -> getQuery()
             2 -> printPeople()
@@ -121,7 +107,6 @@ fun printPeople() {
 }
 
 fun main(args: Array<String>) {
-    //getData()
     readData(args)
     menu()
 }
